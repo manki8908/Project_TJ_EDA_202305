@@ -73,8 +73,6 @@ def search_hotel(hotel_name, hotel_address):
 
 def get_attribute():
 
-    line = []
-
     # 별점
     try:
         star_score = int(driver.find_element(By.XPATH, '//*[@id="app-root"]/div/div/div/div[2]/div[1]/div[2]/span[1]/em').text)
@@ -127,6 +125,8 @@ def get_attribute():
             facilitys_list.append(li.text.strip())
     except:
         facilitys_list = None
+        facilitys_list_join = None
+    facilitys_list_join = "\n".join(facilitys_list)
     print("facilitys_list: ", facilitys_list)
 
 
@@ -147,7 +147,9 @@ def get_attribute():
     except:
         print("이런점이 좋아요 정보가 없습니다")
         these_good_list = None
+        these_good_list_join = None
         these_good_count = None
+
 
     else:
         # "이런점이 좋았어요" 더보기 다 눌러 놓기
@@ -165,10 +167,19 @@ def get_attribute():
             these_good_list.append({li.text.split("\n")[0].strip().replace('"',""): int(li.text.split("\n")[2].strip())})
         print("these_good_list: ", these_good_list)
 
+        these_good_list_join=''
+        for i, item in enumerate(these_good_list):
+            #print(str(item))
+            if i == len(these_good_list)-1:
+                these_good_list_join += str(item)
+            else:
+                these_good_list_join += str(item) + '\n'
+
 
     # combine item
-    line.append([star_score, visitor_review_count, blog_review_count, 
-                dist_from_stn, time_from_stn, facilitys_list, these_good_count, these_good_list])
+    line = [star_score, visitor_review_count, blog_review_count, 
+            dist_from_stn, time_from_stn, facilitys_list_join, 
+            these_good_count, these_good_list_join]
 
     return line
 
@@ -180,7 +191,8 @@ def main():
     #df.info()
 
     # 서울시 전체 숙소 네이버 지도에서 검색 및 정보 크롤링
-    line = []
+    result = []
+
     #for i in df.index:
     for i in [0,1,2,3]:
 
@@ -206,11 +218,11 @@ def main():
         driver.close
 
         # result save
-        line.append(crw_item)
+        result.append(crw_item)
 
-    print(line)
-    #get_list = pd.DataFrame(line, columns=['1', '2', '3', '4', '5', '6', '7', '8'])
-    #print(get_list)
+    print("print line: ", result)
+    get_list = pd.DataFrame(result, columns=['1', '2', '3', '4', '5', '6', '7', '8'])
+    get_list.to_csv("../DAOU/test_out")
 
 if __name__ == '__main__':
     main()
