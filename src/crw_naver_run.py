@@ -103,6 +103,8 @@ def get_attribute():
     dist_from_stn = None
     time_from_stn = None
     facilitys_list_join = None
+    these_good_count = None
+    these_good_list_join = None
 
     # 별점
     try:
@@ -162,55 +164,57 @@ def get_attribute():
 
 
     # .. 리뷰 클릭
-    try:
-        check_list = driver.find_elements(By.CSS_SELECTOR, 'div.place_fixed_maintab > div > div > div > div.flicking-camera > a > span.veBoZ')
+    try:    # 홈, 리뷰 탭이 있는지 없는지 확인
+        check_list = driver.find_elements(By.CSS_SELECTOR, 'div.place_fixed_maintab > div > div > div > div.flicking-camera > a.tpj9w._tab-menu > span.veBoZ')
+        print("print check_list: ", check_list)
     except:
         pass
     else:
-        for i, li in enumerate(check_list):
-            #print(i, type(li.text), li.text)
-            if "리뷰" in li.text: 
-                find_i = i+1  # python index + 1
-        driver.find_element(By.CSS_SELECTOR, f'div.place_fixed_maintab > div > div > div > div.flicking-camera > a:nth-child({find_i})').click()
-        check_list = driver.find_elements(By.CSS_SELECTOR, 'div.place_fixed_maintab > div > div > div > div.flicking-camera > a > span.veBoZ')
+        # 리뷰 버튼이 있으면 클릭
+        if check_list:
+            for i, li in enumerate(check_list):
+                #print(i, type(li.text), li.text)
+                if "리뷰" in li.text: 
+                    find_i = i+1  # python index + 1
+            driver.find_element(By.CSS_SELECTOR, f'div.place_fixed_maintab > div > div > div > div.flicking-camera > a:nth-child({find_i})').click()
+            check_list = driver.find_elements(By.CSS_SELECTOR, 'div.place_fixed_maintab > div > div > div > div.flicking-camera > a > span.veBoZ')
 
-
-    # 이런점이 좋아요 정보 크롤링
-    these_good_list = []
-    try:
-        these_good_count = int(driver.find_element(By.CSS_SELECTOR, '#app-root > div > div > div > div:nth-child(7) > div:nth-child(3) > div.place_section.no_margin.mdJ86 > div > div > div._Wmab > em').text)
-        print('these_good_count: ', these_good_count)
-    
-    except:
-        print("이런점이 좋아요 정보가 없습니다")
-        these_good_list = None
-        these_good_list_join = None
-        these_good_count = None
-
-    else:
-        # "이런점이 좋았어요" 더보기 다 눌러 놓기
-        while True:
+            # 이런점이 좋아요 정보 크롤링
+            these_good_list = []
             try:
-                driver.find_element(By.CSS_SELECTOR, '#app-root > div > div > div > div:nth-child(7) > div:nth-child(3) > div.place_section.no_margin.mdJ86 > div > div > div.k2tmh > a.Tvx37').click()
-                driver.implicitly_wait(1)
+                these_good_count = int(driver.find_element(By.CSS_SELECTOR, '#app-root > div > div > div > div:nth-child(7) > div:nth-child(3) > div.place_section.no_margin.mdJ86 > div > div > div._Wmab > em').text)
+                print('these_good_count: ', these_good_count)
+
             except:
-                break
+                print("이런점이 좋아요 정보가 없습니다")
+                these_good_list = None                
 
-        # 이런점이 좋아요, 딕셔너리로 {'리뷰':좋아요개수}
-        
-        these_good = driver.find_elements(By.CSS_SELECTOR, 'div.place_section.no_margin.mdJ86 > div > div > div.k2tmh > ul > li')
-        for i, li in enumerate(these_good):
-            these_good_list.append({li.text.split("\n")[0].strip().replace('"',""): int(li.text.split("\n")[2].strip())})
-        print("these_good_list: ", these_good_list)
-
-        these_good_list_join=''
-        for i, item in enumerate(these_good_list):
-            #print(str(item))
-            if i == len(these_good_list)-1:
-                these_good_list_join += str(item)
             else:
-                #these_good_list_join += str(item) + '\n'
-                these_good_list_join += str(item) + ','
+                # "이런점이 좋았어요" 더보기 다 눌러 놓기
+                while True:
+                    try:
+                        driver.find_element(By.CSS_SELECTOR, '#app-root > div > div > div > div:nth-child(7) > div:nth-child(3) > div.place_section.no_margin.mdJ86 > div > div > div.k2tmh > a.Tvx37').click()
+                        driver.implicitly_wait(1)
+                    except:
+                        break
+                    
+                # 이런점이 좋아요, 딕셔너리로 {'리뷰':좋아요개수}
+
+                these_good = driver.find_elements(By.CSS_SELECTOR, 'div.place_section.no_margin.mdJ86 > div > div > div.k2tmh > ul > li')
+                for i, li in enumerate(these_good):
+                    these_good_list.append({li.text.split("\n")[0].strip().replace('"',""): int(li.text.split("\n")[2].strip())})
+                print("these_good_list: ", these_good_list)
+
+                these_good_list_join=''
+                for i, item in enumerate(these_good_list):
+                    #print(str(item))
+                    if i == len(these_good_list)-1:
+                        these_good_list_join += str(item)
+                    else:
+                        #these_good_list_join += str(item) + '\n'
+                        these_good_list_join += str(item) + ','
+
+    
 
 
     # combine item
@@ -232,7 +236,7 @@ def main():
 
     #for i in df.index:
     #for i in range(50):
-    for i in range(15):
+    for i in [15]:
 
         print(f"----{i} 시작-----------------------------------")
         print(df.사업장명[i], df.지번주소[i])
