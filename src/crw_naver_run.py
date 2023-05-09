@@ -97,11 +97,18 @@ def search_hotel(hotel_name, hotel_address):
 
 def get_attribute():
 
+    star_score = None
+    visitor_review_count = None
+    blog_review_count = None
+    dist_from_stn = None
+    time_from_stn = None
+    facilitys_list_join = None
+
     # 별점
     try:
         star_score = int(driver.find_element(By.XPATH, '//*[@id="app-root"]/div/div/div/div[2]/div[1]/div[2]/span[1]/em').text)
     except:
-        star_score = None
+        pass
     print("star_score: ", star_score)
 
 
@@ -110,7 +117,7 @@ def get_attribute():
     try:
         visitor_review_count = int(driver.find_element(By.XPATH, '//*[@id="app-root"]/div/div/div/div[2]/div[1]/div[2]/span[2]/a/em').text)
     except:
-        visitor_review_count = None
+        pass
     print("visitor_review_count: ", visitor_review_count)
 
 
@@ -118,7 +125,7 @@ def get_attribute():
     try:
         blog_review_count = driver.find_element(By.XPATH, '//*[@id="app-root"]/div/div/div/div[2]/div[1]/div[2]/span[3]/a/em').text
     except:
-        blog_review_count = None
+        pass
     print("blog_review_count: ", blog_review_count)
 
 
@@ -127,7 +134,7 @@ def get_attribute():
     try:
         dist_from_stn = driver.find_element(By.CSS_SELECTOR, 'div.O8qbU.tQY7D > div > div > em').text
     except:
-        dist_from_stn = None
+        pass
     print("dist_from_stn: ", dist_from_stn)
 
     # 시간
@@ -137,7 +144,7 @@ def get_attribute():
         if time_from_stn.find("분"):
             time_from_stn = time_from_stn.split('분')[0].split('도보')[1]
     except:
-        time_from_stn = None
+        pass
     print("time_from_stn: ", time_from_stn)
 
 
@@ -149,22 +156,27 @@ def get_attribute():
             facilitys_list.append(li.text.strip())
     except:
         facilitys_list = None
-        facilitys_list_join = None
     #facilitys_list_join = "\n".join(facilitys_list)
     facilitys_list_join = ",".join(facilitys_list)
     print("facilitys_list: ", facilitys_list)
 
 
     # .. 리뷰 클릭
-    check_list = driver.find_elements(By.CSS_SELECTOR, 'div.place_fixed_maintab > div > div > div > div.flicking-camera > a > span.veBoZ')
-    for i, li in enumerate(check_list):
-        #print(i, type(li.text), li.text)
-        if "리뷰" in li.text: 
-            find_i = i+1  # python index + 1
-    driver.find_element(By.CSS_SELECTOR, f'div.place_fixed_maintab > div > div > div > div.flicking-camera > a:nth-child({find_i})').click()
+    try:
+        check_list = driver.find_elements(By.CSS_SELECTOR, 'div.place_fixed_maintab > div > div > div > div.flicking-camera > a > span.veBoZ')
+    except:
+        pass
+    else:
+        for i, li in enumerate(check_list):
+            #print(i, type(li.text), li.text)
+            if "리뷰" in li.text: 
+                find_i = i+1  # python index + 1
+        driver.find_element(By.CSS_SELECTOR, f'div.place_fixed_maintab > div > div > div > div.flicking-camera > a:nth-child({find_i})').click()
+        check_list = driver.find_elements(By.CSS_SELECTOR, 'div.place_fixed_maintab > div > div > div > div.flicking-camera > a > span.veBoZ')
 
 
     # 이런점이 좋아요 정보 크롤링
+    these_good_list = []
     try:
         these_good_count = int(driver.find_element(By.CSS_SELECTOR, '#app-root > div > div > div > div:nth-child(7) > div:nth-child(3) > div.place_section.no_margin.mdJ86 > div > div > div._Wmab > em').text)
         print('these_good_count: ', these_good_count)
@@ -174,7 +186,6 @@ def get_attribute():
         these_good_list = None
         these_good_list_join = None
         these_good_count = None
-
 
     else:
         # "이런점이 좋았어요" 더보기 다 눌러 놓기
@@ -186,7 +197,7 @@ def get_attribute():
                 break
 
         # 이런점이 좋아요, 딕셔너리로 {'리뷰':좋아요개수}
-        these_good_list = []
+        
         these_good = driver.find_elements(By.CSS_SELECTOR, 'div.place_section.no_margin.mdJ86 > div > div > div.k2tmh > ul > li')
         for i, li in enumerate(these_good):
             these_good_list.append({li.text.split("\n")[0].strip().replace('"',""): int(li.text.split("\n")[2].strip())})
@@ -220,7 +231,8 @@ def main():
     result = []
 
     #for i in df.index:
-    for i in range(50):
+    #for i in range(50):
+    for i in range(15):
 
         print(f"----{i} 시작-----------------------------------")
         print(df.사업장명[i], df.지번주소[i])
