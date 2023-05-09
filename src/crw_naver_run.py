@@ -20,12 +20,14 @@
  13  좌표정보(Y)     603 non-null    float64
  14  위도            583 non-null    float64
  15  경도            583 non-null    float64
- 16
- 17
- 18
- 19
- 20
-
+ 16  별점
+ 17  방문자 리뷰수
+ 18  블로그 리뷰수
+ 19  지하철역과의 거리
+ 20  도보시간
+ 21  구비시설
+ 22  네이버 이런점이 좋아요 총합
+ 23  네이버 이런점이 좋아요 "{항목:좋아요수}"
 '''
 
 import requests
@@ -141,10 +143,10 @@ def get_attribute():
 
     # 시간
     try:
-        time_from_stn = driver.find_element(By.XPATH, '//*[@id="app-root"]/div/div/div/div[6]/div/div[2]/div/div/div[2]/div/div/div/span').text
-        print("time_from_stn: ", time_from_stn)
-        if time_from_stn.find("분"):
-            time_from_stn = time_from_stn.split('분')[0].split('도보')[1]
+        time_text = driver.find_element(By.XPATH, '//*[@id="app-root"]/div/div/div/div[6]/div/div[2]/div/div/div[2]/div/div/div/span').text
+        #print("time_text: ", time_text)
+        p = re.compile('[0-9]+분')
+        time_from_stn = p.findall(time_text)            
     except:
         pass
     print("time_from_stn: ", time_from_stn)
@@ -228,7 +230,7 @@ def get_attribute():
 def main():
 
     # 서울시 전체 숙소(호텔,모델,게스트하우스, 등등) 리스트 로드
-    df = pd.read_csv('../DAIN/crw_list.txt')
+    df = pd.read_csv('../DAIN/crw_list.txt', index_col=0)
     #df.info()
 
     # 서울시 전체 숙소 네이버 지도에서 검색 및 정보 크롤링
@@ -236,7 +238,7 @@ def main():
 
     #for i in df.index:
     #for i in range(50):
-    for i in [15]:
+    for i in [0,1]:
 
         print(f"----{i} 시작-----------------------------------")
         print(df.사업장명[i], df.지번주소[i])
@@ -263,10 +265,18 @@ def main():
         # result save
         print("crw_item print: ")
         print(crw_item)
-        result.append(crw_item)
+
+        result1 = df.iloc[i].tolist()
+        result1.extend(crw_item)
+        result.append(result1)
 
     print("print result: ", result)
-    get_list = pd.DataFrame(result, columns=['1', '2', '3', '4', '5', '6', '7', '8'])
+
+    colum_names=['인허가일자','인허가취소일자','영업상태코드','폐업일자','휴업시작일자','휴업종료일자',
+                 '재개업일자','지번주소','도로명주소','도로명우편번호','사업장명','좌표정보(X)','좌표정보(Y)','위도','경도', 
+                 '별점', '방문자 리뷰수', '블로그 리뷰수', '지하철역과의 거리', '도보시간', '구비시설',
+                  '네이버 이런점이 좋아요 총합', '네이버 이런점이 좋아요 {항목:좋아요수}']
+    get_list = pd.DataFrame(result, columns=colum_names)
     get_list.to_csv("../DAOU/test_out")
 
 if __name__ == '__main__':
