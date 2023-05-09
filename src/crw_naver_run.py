@@ -2,6 +2,30 @@
 작성자: 김만기
 프로그램: 네이버 지도에서 숙박업체 정보 크롤링              
 출력파일 내용:
+ #   Column         Non-Null Count  Dtype  
+---  ------         --------------  -----  
+ 0   Unnamed: 0     610 non-null    int64  
+ 1   인허가일자      610 non-null    object 
+ 2   인허가취소일자  1 non-null      float64
+ 3   영업상태코드    610 non-null    int64  
+ 4   폐업일자        136 non-null    object 
+ 5   휴업시작일자    9 non-null      object 
+ 6   휴업종료일자    9 non-null      object 
+ 7   재개업일자      0 non-null      float64
+ 8   지번주소        610 non-null    object 
+ 9   도로명주소      602 non-null    object 
+ 10  도로명우편번호  516 non-null    float64
+ 11  사업장명        610 non-null    object 
+ 12  좌표정보(X)     603 non-null    float64
+ 13  좌표정보(Y)     603 non-null    float64
+ 14  위도            583 non-null    float64
+ 15  경도            583 non-null    float64
+ 16
+ 17
+ 18
+ 19
+ 20
+
 '''
 
 import requests
@@ -126,7 +150,8 @@ def get_attribute():
     except:
         facilitys_list = None
         facilitys_list_join = None
-    facilitys_list_join = "\n".join(facilitys_list)
+    #facilitys_list_join = "\n".join(facilitys_list)
+    facilitys_list_join = ",".join(facilitys_list)
     print("facilitys_list: ", facilitys_list)
 
 
@@ -173,7 +198,8 @@ def get_attribute():
             if i == len(these_good_list)-1:
                 these_good_list_join += str(item)
             else:
-                these_good_list_join += str(item) + '\n'
+                #these_good_list_join += str(item) + '\n'
+                these_good_list_join += str(item) + ','
 
 
     # combine item
@@ -194,7 +220,7 @@ def main():
     result = []
 
     #for i in df.index:
-    for i in [0,1,2,3]:
+    for i in range(50):
 
         print(f"----{i} 시작-----------------------------------")
         print(df.사업장명[i], df.지번주소[i])
@@ -206,6 +232,7 @@ def main():
         # 네이버 지도에서 숙소 검색창 띄우기
         answer1 = search_hotel(df.사업장명[i], df.지번주소[i])
         if not(answer1): 
+            print('----숙소가 없습니다, 검색창 띄우기 건너띔')
             continue
         else:
             print('----검색창 띄우기 완료')
@@ -218,9 +245,11 @@ def main():
         driver.close
 
         # result save
+        print("crw_item print: ")
+        print(crw_item)
         result.append(crw_item)
 
-    print("print line: ", result)
+    print("print result: ", result)
     get_list = pd.DataFrame(result, columns=['1', '2', '3', '4', '5', '6', '7', '8'])
     get_list.to_csv("../DAOU/test_out")
 
