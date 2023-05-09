@@ -2,32 +2,29 @@
 작성자: 김만기
 프로그램: 네이버 지도에서 숙박업체 정보 크롤링              
 출력파일 내용:
- #   Column         Non-Null Count  Dtype  
----  ------         --------------  -----  
- 0   Unnamed: 0     610 non-null    int64  
- 1   인허가일자      610 non-null    object 
- 2   인허가취소일자  1 non-null      float64
- 3   영업상태코드    610 non-null    int64  
- 4   폐업일자        136 non-null    object 
- 5   휴업시작일자    9 non-null      object 
- 6   휴업종료일자    9 non-null      object 
- 7   재개업일자      0 non-null      float64
- 8   지번주소        610 non-null    object 
- 9   도로명주소      602 non-null    object 
- 10  도로명우편번호  516 non-null    float64
- 11  사업장명        610 non-null    object 
- 12  좌표정보(X)     603 non-null    float64
- 13  좌표정보(Y)     603 non-null    float64
- 14  위도            583 non-null    float64
- 15  경도            583 non-null    float64
- 16  별점
- 17  방문자 리뷰수
- 18  블로그 리뷰수
- 19  지하철역과의 거리
- 20  도보시간
- 21  구비시설
- 22  네이버 이런점이 좋아요 총합
- 23  네이버 이런점이 좋아요 "{항목:좋아요수}"
+ #   Column                  Non-Null Count  Dtype  
+---  ------                  --------------  -----  
+ 0   사업장명                    34 non-null     object 
+ 1   업소유형                    34 non-null     object 
+ 2   지번주소                    34 non-null     object 
+ 3   도로명주소                   34 non-null     object 
+ 4   위도                      34 non-null     float64
+ 5   경도                      34 non-null     float64
+ 6   별점                      21 non-null     float64
+ 7   방문자 리뷰수                 28 non-null     float64
+ 8   블로그 리뷰수                 21 non-null     object 
+ 9   지하철역과의 거리               32 non-null     object 
+ 10  도보시간                    12 non-null     object 
+ 11  구비시설                    22 non-null     object 
+ 12  네이버 이런점이 좋아요 총합         23 non-null     float64
+ 13  네이버 이런점이 좋아요 {항목:좋아요수}  23 non-null     object 
+ 14  인허가일자                   34 non-null     object 
+ 15  인허가취소일자                 0 non-null      float64
+ 16  영업상태코드                  34 non-null     int64  
+ 17  폐업일자                    2 non-null      object 
+ 18  휴업시작일자                  2 non-null      object 
+ 19  휴업종료일자                  2 non-null      object 
+ 20  재개업일자                   0 non-null      float64
 '''
 
 import requests
