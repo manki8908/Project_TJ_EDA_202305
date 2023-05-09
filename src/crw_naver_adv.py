@@ -48,8 +48,10 @@ def search_hotel(hotel_name, hotel_address):
     driver.switch_to.frame("searchIframe")
 
     #검색 목록중 호텔 url을 가져오기    
-    if len(driver.find_elements(by=By.XPATH, value='//*[@id="_pcmap_list_scroll_container"]/ul/li')) != 0:   
-        print(len(driver.find_elements(By.XPATH, '//*[@id="_pcmap_list_scroll_container"]/ul/li')))
+    search_result = driver.find_elements(by=By.XPATH, value='//*[@id="_pcmap_list_scroll_container"]/ul/li')
+    count_search_result = len(driver.find_elements(by=By.XPATH, value='//*[@id="_pcmap_list_scroll_container"]/ul/li'))
+    print(f"주소검색결과 개수: {count_search_result}")
+    if count_search_result > 1:   
         #식당 정보 클릭        
         driver.execute_script('return document.querySelector("#_pcmap_list_scroll_container > ul > li:nth-child(1) > div.qbGlu > div.ouxiq.icT4K > a:nth-child(1)").click()')
         driver.implicitly_wait(2)
@@ -127,7 +129,9 @@ def get_attribute():
     # 리뷰 클릭
     check_list = driver.find_elements(By.CSS_SELECTOR, 'div.place_fixed_maintab > div > div > div > div.flicking-camera > a > span.veBoZ')
     for i, li in enumerate(check_list):
-        if li.find("리뷰") == True: find_i = i
+        #print(i, type(li.text), li.text)
+        if "리뷰" in li.text: 
+            find_i = i+1  # python index + 1
     driver.find_element(By.CSS_SELECTOR, f'div.place_fixed_maintab > div > div > div > div.flicking-camera > a:nth-child({find_i})').click()
 
     # 더보기 다 눌러 놓기
@@ -171,16 +175,20 @@ def main():
     #for i in df.index:
     for i in [0,1,2,3,4]:
 
-        print(i,df.사업장명[i], df.지번주소[i])
+        print(f"----{i} 시작-----------------------------------")
+        print(df.사업장명[i], df.지번주소[i])
 
         # 크롬 드라이버 설정 및 네이버 지도 켜기
         start_navermap_with_chrome()
-#
+        print('111')
+
         # 네이버 지도에서 숙소 검색창 띄우기
         search_hotel(df.사업장명[i], df.지번주소[i])
-#
+        print('222')
+        
         # 검색숙소 정보 가져오기
         crw_item = get_attribute()
+        print('333')
 
         line.append(crw_item)
 
