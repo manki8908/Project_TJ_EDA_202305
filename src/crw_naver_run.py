@@ -34,7 +34,7 @@ def start_navermap_with_chrome():
     # 네이버 지도 켜기
     driver.get("https://map.naver.com/v5")
     driver.implicitly_wait(5)
-    driver.maximize_window()
+    #driver.maximize_window()
 
 
 
@@ -51,7 +51,9 @@ def search_hotel(hotel_name, hotel_address):
     search_result = driver.find_elements(by=By.XPATH, value='//*[@id="_pcmap_list_scroll_container"]/ul/li')
     count_search_result = len(driver.find_elements(by=By.XPATH, value='//*[@id="_pcmap_list_scroll_container"]/ul/li'))
     print(f"주소검색결과 개수: {count_search_result}")
-    if count_search_result > 1:   
+    if count_search_result == 0:   
+        return False
+    elif count_search_result > 1:
         #식당 정보 클릭        
         driver.execute_script('return document.querySelector("#_pcmap_list_scroll_container > ul > li:nth-child(1) > div.qbGlu > div.ouxiq.icT4K > a:nth-child(1)").click()')
         driver.implicitly_wait(2)
@@ -64,6 +66,8 @@ def search_hotel(hotel_name, hotel_address):
     detail_iframe = driver.find_element(By.ID, 'entryIframe')
     driver.switch_to.frame(detail_iframe)
     # driver.switch_to.frame('entryIframe') # 그냥하면 안됨
+
+    return True
 
 
 
@@ -126,7 +130,7 @@ def get_attribute():
     print("facilitys_list: ", facilitys_list)
 
 
-    # 리뷰 클릭
+    # .. 리뷰 클릭
     check_list = driver.find_elements(By.CSS_SELECTOR, 'div.place_fixed_maintab > div > div > div > div.flicking-camera > a > span.veBoZ')
     for i, li in enumerate(check_list):
         #print(i, type(li.text), li.text)
@@ -134,23 +138,32 @@ def get_attribute():
             find_i = i+1  # python index + 1
     driver.find_element(By.CSS_SELECTOR, f'div.place_fixed_maintab > div > div > div > div.flicking-camera > a:nth-child({find_i})').click()
 
-    # 더보기 다 눌러 놓기
-    while True:
-        try:
-            driver.find_element(By.CSS_SELECTOR, '#app-root > div > div > div > div:nth-child(7) > div:nth-child(3) > div.place_section.no_margin.mdJ86 > div > div > div.k2tmh > a.Tvx37').click()
-            driver.implicitly_wait(1)
-        except:
-            break
 
-    # 이런점이 좋아요, 딕셔너리로 {'리뷰':좋아요개수}
-    these_good_count = int(driver.find_element(By.CSS_SELECTOR, '#app-root > div > div > div > div:nth-child(7) > div:nth-child(3) > div.place_section.no_margin.mdJ86 > div > div > div._Wmab > em').text)
-    print('these_good_count: ', these_good_count)
+    # 이런점이 좋아요 정보 크롤링
+    try:
+        these_good_count = int(driver.find_element(By.CSS_SELECTOR, '#app-root > div > div > div > div:nth-child(7) > div:nth-child(3) > div.place_section.no_margin.mdJ86 > div > div > div._Wmab > em').text)
+        print('these_good_count: ', these_good_count)
+    
+    except:
+        print("이런점이 좋아요 정보가 없습니다")
+        these_good_list = None
+        these_good_count = None
 
-    these_good_list = []
-    these_good = driver.find_elements(By.CSS_SELECTOR, 'div.place_section.no_margin.mdJ86 > div > div > div.k2tmh > ul > li')
-    for i, li in enumerate(these_good):
-        these_good_list.append({li.text.split("\n")[0].strip().replace('"',""): int(li.text.split("\n")[2].strip())})
-    print("these_good_list: ", these_good_list)
+    else:
+        # "이런점이 좋았어요" 더보기 다 눌러 놓기
+        while True:
+            try:
+                driver.find_element(By.CSS_SELECTOR, '#app-root > div > div > div > div:nth-child(7) > div:nth-child(3) > div.place_section.no_margin.mdJ86 > div > div > div.k2tmh > a.Tvx37').click()
+                driver.implicitly_wait(1)
+            except:
+                break
+
+        # 이런점이 좋아요, 딕셔너리로 {'리뷰':좋아요개수}
+        these_good_list = []
+        these_good = driver.find_elements(By.CSS_SELECTOR, 'div.place_section.no_margin.mdJ86 > div > div > div.k2tmh > ul > li')
+        for i, li in enumerate(these_good):
+            these_good_list.append({li.text.split("\n")[0].strip().replace('"',""): int(li.text.split("\n")[2].strip())})
+        print("these_good_list: ", these_good_list)
 
 
     # combine item
@@ -173,22 +186,25 @@ def main():
     # 서울시 전체 숙소 네이버 지도에서 검색 및 정보 크롤링
     line = []
     #for i in df.index:
-    for i in [0,1,2,3,4]:
+    for i in [0,1,2,3]:
 
         print(f"----{i} 시작-----------------------------------")
         print(df.사업장명[i], df.지번주소[i])
 
         # 크롬 드라이버 설정 및 네이버 지도 켜기
         start_navermap_with_chrome()
-        print('111')
+        print('----지도켜기 완료')
 
         # 네이버 지도에서 숙소 검색창 띄우기
-        search_hotel(df.사업장명[i], df.지번주소[i])
-        print('222')
-        
+        answer1 = search_hotel(df.사업장명[i], df.지번주소[i])
+        if not(answer1): 
+            continue
+        else:
+            print('----검색창 띄우기 완료')
+              
         # 검색숙소 정보 가져오기
         crw_item = get_attribute()
-        print('333')
+        print('---- 검색숙소 정보 가져오기 완료')
 
         line.append(crw_item)
 
