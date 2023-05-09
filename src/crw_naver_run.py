@@ -1,7 +1,7 @@
 '''
-프로그램: 네이버 지도에서 숙박업체 정보 크롤링              작성자: 김만기
+작성자: 김만기
+프로그램: 네이버 지도에서 숙박업체 정보 크롤링              
 출력파일 내용:
-
 '''
 
 import requests
@@ -170,10 +170,6 @@ def get_attribute():
     line.append([star_score, visitor_review_count, blog_review_count, 
                 dist_from_stn, time_from_stn, facilitys_list, these_good_count, these_good_list])
 
-    
-    # close web
-    driver.close
-
     return line
 
 
@@ -206,10 +202,15 @@ def main():
         crw_item = get_attribute()
         print('---- 검색숙소 정보 가져오기 완료')
 
+        # close web
+        driver.close
+
+        # result save
         line.append(crw_item)
 
-    get_list = pd.DataFrame(line, columns=['1', '2', '3', '4', '5', '6', '7', '8'])
-    print(get_list)
+    print(line)
+    #get_list = pd.DataFrame(line, columns=['1', '2', '3', '4', '5', '6', '7', '8'])
+    #print(get_list)
 
 if __name__ == '__main__':
     main()
