@@ -100,6 +100,7 @@ def search_hotel(hotel_name, hotel_address):
 def get_attribute():
 
     star_score = None
+    stn_type = None
     visitor_review_count = None
     blog_review_count = None
     dist_from_stn = None
@@ -110,10 +111,18 @@ def get_attribute():
 
     # 별점
     try:
-        star_score = int(driver.find_element(By.XPATH, '//*[@id="app-root"]/div/div/div/div[2]/div[1]/div[2]/span[1]/em').text)
+        star_score = float(driver.find_element(By.CSS_SELECTOR, '#app-root > div > div > div > div.place_section.OP4V8 > div.zD5Nm.f7aZ0 > div.dAsGb > span.PXMot.LXIwF > em').text)
     except:
         pass
     print("star_score: ", star_score)
+
+
+    # 업소유형
+    try:
+        stn_type = driver.find_element(By.CSS_SELECTOR, '#_title > span.DJJvD').text
+    except:
+        pass
+    print("stn_type: ", stn_type)
 
 
     # 블로그 리뷰 수 & 방문자 리뷰 수
@@ -220,7 +229,7 @@ def get_attribute():
 
 
     # combine item
-    line = [star_score, visitor_review_count, blog_review_count, 
+    line = [stn_type, star_score, visitor_review_count, blog_review_count, 
             dist_from_stn, time_from_stn, facilitys_list_join, 
             these_good_count, these_good_list_join]
 
@@ -237,8 +246,8 @@ def main():
     result = []
 
     #for i in df.index:
-    #for i in range(50):
-    for i in [0,1]:
+    for i in range(50):
+    #for i in [0,1]:
 
         print(f"----{i} 시작-----------------------------------")
         print(df.사업장명[i], df.지번주소[i])
@@ -272,12 +281,21 @@ def main():
 
     print("print result: ", result)
 
-    colum_names=['인허가일자','인허가취소일자','영업상태코드','폐업일자','휴업시작일자','휴업종료일자',
-                 '재개업일자','지번주소','도로명주소','도로명우편번호','사업장명','좌표정보(X)','좌표정보(Y)','위도','경도', 
-                 '별점', '방문자 리뷰수', '블로그 리뷰수', '지하철역과의 거리', '도보시간', '구비시설',
-                  '네이버 이런점이 좋아요 총합', '네이버 이런점이 좋아요 {항목:좋아요수}']
+    colum_names = ['사업장명','지번주소','도로명주소','위도','경도',
+                '인허가일자','인허가취소일자','영업상태코드','폐업일자','휴업시작일자','휴업종료일자','재개업일자',
+                '업소유형','별점', '방문자 리뷰수', '블로그 리뷰수', '지하철역과의 거리', '도보시간', '구비시설',
+                '네이버 이런점이 좋아요 총합', '네이버 이런점이 좋아요 {항목:좋아요수}']  # 21
+    
     get_list = pd.DataFrame(result, columns=colum_names)
-    get_list.to_csv("../DAOU/test_out")
+    print(get_list.info())
+
+    # 컬럼 순서 변경
+    colum_names2 = ['사업장명','업소유형','지번주소','도로명주소','위도','경도',
+                    '별점','방문자 리뷰수', '블로그 리뷰수', '지하철역과의 거리', '도보시간', '구비시설',
+                    '네이버 이런점이 좋아요 총합', '네이버 이런점이 좋아요 {항목:좋아요수}',
+                    '인허가일자','인허가취소일자','영업상태코드','폐업일자','휴업시작일자','휴업종료일자','재개업일자']  # 21
+    get_df = get_list[colum_names2]
+    get_df.to_csv("../DAOU/test_out.csv", encoding='euc-kr')
 
 if __name__ == '__main__':
     main()
