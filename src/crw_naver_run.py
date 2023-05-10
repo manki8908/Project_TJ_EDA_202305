@@ -56,7 +56,7 @@ def start_navermap_with_chrome():
 
     # 네이버 지도 켜기
     driver.get("https://map.naver.com/v5")
-    driver.implicitly_wait(2)
+    driver.implicitly_wait(10)
     #driver.maximize_window()
 
 
@@ -79,7 +79,7 @@ def search_hotel(hotel_name, hotel_address):
     elif count_search_result > 1:
         #식당 정보 클릭        
         driver.execute_script('return document.querySelector("#_pcmap_list_scroll_container > ul > li:nth-child(1) > div.qbGlu > div> a:nth-child(1)").click()')
-        driver.implicitly_wait(2)
+        driver.implicitly_wait(3)
     else:
         print('검색 결과 한개, 새창 없음')
 
@@ -228,7 +228,7 @@ def main():
     result = []
 
     #for i in df.index:
-    for i in range(201,300):
+    for i in range(0,100,1):
     #for i in [0,1]:
 
         print(f"----{i} 시작-----------------------------------")
@@ -277,7 +277,7 @@ def main():
                     '네이버 이런점이 좋아요 총합', '네이버 이런점이 좋아요 {항목:좋아요수}',
                     '인허가일자','인허가취소일자','영업상태코드','폐업일자','휴업시작일자','휴업종료일자','재개업일자']  # 21
     get_df = get_list[colum_names2]
-    get_df.to_csv("../DAOU/test_out_201_300.csv", encoding='euc-kr')
+    get_df.to_csv("../DAOU/test_out_0_100.csv", encoding='euc-kr')
 
 if __name__ == '__main__':
     main()
