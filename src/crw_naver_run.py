@@ -112,25 +112,31 @@ def get_attribute():
     except:
         pass
     print("star_score: ", star_score)
+
+
     # 업소유형
     try:
         stn_type = driver.find_element(By.CSS_SELECTOR, '#_title > span.DJJvD').text
     except:
         pass
     print("stn_type: ", stn_type)
+
+
     # 블로그 리뷰 수 & 방문자 리뷰 수
-    # 방문자
     try:
-        visitor_review_count = int(driver.find_element(By.XPATH, '//*[@id="app-root"]/div/div/div/div[2]/div[1]/div[2]/span[2]/a/em').text)
+        review_count_tag_list = driver.find_elements(By.CSS_SELECTOR, 'div.zD5Nm.f7aZ0 > div.dAsGb > span.PXMot')
     except:
         pass
-    print("visitor_review_count: ", visitor_review_count)
-    # 블로그
-    try:
-        blog_review_count = driver.find_element(By.XPATH, '//*[@id="app-root"]/div/div/div/div[2]/div[1]/div[2]/span[3]/a/em').text
-    except:
-        pass
-    print("blog_review_count: ", blog_review_count)
+    else:
+        for li in review_count_tag_list:
+            if "방문자리뷰" in li.text:
+                visitor_review_count = li.text.split(" ")[1]
+                print("visitor_review_count: ", visitor_review_count)
+            if "블로그리뷰" in li.text:
+                blog_review_count = li.text.split(" ")[1]
+                print("blog_review_count: ", blog_review_count)
+
+
     # 가까운 지하철 역에서 거리 / 도보시간
     # 거리
     try:
@@ -138,15 +144,18 @@ def get_attribute():
     except:
         pass
     print("dist_from_stn: ", dist_from_stn)
-    # 시간
+    # 도보시간
     try:
-        time_text = driver.find_element(By.XPATH, '//*[@id="app-root"]/div/div/div/div[6]/div/div[2]/div/div/div[2]/div/div/div/span').text
+        #time_text = driver.find_element(By.XPATH, '//*[@id="app-root"]/div/div/div/div[6]/div/div[2]/div/div/div[2]/div/div/div/span').text
+        time_text = driver.find_element(By.CSS_SELECTOR, 'div.place_section.no_margin.vKA6F > div > div > div.O8qbU > div.vV_z_ > div > a > span.zPfVt').text
         #print("time_text: ", time_text)
         p = re.compile('[0-9]+분')
         time_from_stn = p.findall(time_text)            
     except:
         pass
     print("time_from_stn: ", time_from_stn)
+
+
     # 주요시설
     facilitys_list = []
     try:
@@ -227,8 +236,8 @@ def main():
     # 서울시 전체 숙소 네이버 지도에서 검색 및 정보 크롤링
     result = []
 
-    #for i in df.index:
-    for i in range(0,100,1):
+    for i in df.index:
+    #for i in range(0,100,1):
     #for i in [0,1]:
 
         print(f"----{i} 시작-----------------------------------")
