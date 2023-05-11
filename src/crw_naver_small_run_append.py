@@ -30,10 +30,12 @@
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
+import numpy as np
 import time
 from tqdm.notebook import tqdm
 import re
 import sys
+import os
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -61,12 +63,24 @@ def start_navermap_with_chrome():
 
 
 
-def search_hotel(hotel_name, hotel_address):
+def search_hotel(hotel_name, hotel_address1, hotel_address2):
     # 검색 트리
-    search_keyword = f'{hotel_name}, {hotel_address}' 
+    if pd.notnull(hotel_address1):
+        address = hotel_address1
+        print(f"지번 주소를 가져왔습니다, {address}")
+    else:
+        if pd.notnull(hotel_address2):
+            address = hotel_address2
+            print(f"도로명 주소를 가져왔습니다, {address}")
+        else:
+            print("주소 정보가 없습니다")
+            return False
+
+    search_keyword = f'{hotel_name}, {address}' 
+    print(f"검색키워드: {search_keyword}")
     driver.find_element(By.CLASS_NAME, 'input_search').send_keys(search_keyword)
     driver.find_element(By.CLASS_NAME, 'input_search').send_keys(Keys.ENTER)
-    driver.implicitly_wait(3)
+    driver.implicitly_wait(5)
     # 새로운 프레임으로 driver 이동
     driver.switch_to.frame("searchIframe")
 
@@ -79,7 +93,7 @@ def search_hotel(hotel_name, hotel_address):
     elif count_search_result > 1:
         #식당 정보 클릭        
         driver.execute_script('return document.querySelector("#_pcmap_list_scroll_container > ul > li:nth-child(1) > div.qbGlu > div> a:nth-child(1)").click()')
-        driver.implicitly_wait(3)
+        driver.implicitly_wait(5)
     else:
         print('검색 결과 한개, 새창 없음')
 
@@ -198,7 +212,7 @@ def get_attribute():
                         while True:
                             try:
                                 driver.find_element(By.CSS_SELECTOR, '#app-root > div > div > div > div:nth-child(7) > div:nth-child(3) > div.place_section.no_margin.mdJ86 > div > div > div.k2tmh > a.Tvx37').click()
-                                driver.implicitly_wait(1)
+                                driver.implicitly_wait(3)
                             except:
                                 break
                             
@@ -229,64 +243,88 @@ def get_attribute():
 
 def main():
 
-    # 서울시 전체 숙소(호텔,모델,게스트하우스, 등등) 리스트 로드
-    df = pd.read_csv('../DAIN/crw_list.txt', index_col=0)
-    #df.info()
-
-    # 서울시 전체 숙소 네이버 지도에서 검색 및 정보 크롤링
+    # 초기화, 
+    output_path = "../DAOU/test_small_out.csv"
     result = []
 
-    for i in df.index:
-    #for i in range(0,100,1):
+    colum_names = ['사업장명','관광숙박업상세명','건물용도명','지번주소','도로명주소','위도','경도','객실수', 
+                   '시설면적','시설규모','인허가일자','인허가취소일자','영업상태코드','폐업일자','휴업시작일자',
+                   '휴업종료일자','재개업일자','데이터갱신일자',
+                   '업소유형','별점', '방문자 리뷰수', '블로그 리뷰수', '지하철역과의 거리', '도보시간', '구비시설',
+                   '네이버 이런점이 좋아요 총합', '네이버 이런점이 좋아요 {항목:좋아요수}']  # 26
+    
+            # 컬럼 순서 변경
+    colum_names2 = ['사업장명','업소유형','관광숙박업상세명','건물용도명','지번주소','도로명주소','위도','경도',
+                    '별점','방문자 리뷰수', '블로그 리뷰수', '지하철역과의 거리', '도보시간', '객실수','시설면적','시설규모','구비시설',
+                    '네이버 이런점이 좋아요 총합', '네이버 이런점이 좋아요 {항목:좋아요수}', '데이터갱신일자',
+                    '인허가일자','인허가취소일자','영업상태코드','폐업일자','휴업시작일자','휴업종료일자','재개업일자']  # 26
+    
+
+    # 서울시 전체 숙소(호텔,모델,게스트하우스, 등등) 리스트 로드
+    #df = pd.read_csv('../DAIN/crw_list.txt', index_col=0)
+    df = pd.read_csv('../DAIN/crw_small_list.txt', index_col=0)
+    #df.info()
+
+    # 새파일? or 기존파일에 추가 선택
+    file_set = int(input("기존 파일에 추가하시겠습니까? 1(네) or 0(아니오): " ))
+
+    if file_set == 1: 
+        start_line = int(input("output file의 몇 번째 index부터 추가할 것입니까?: " )) - 2
+        print('기존 파일에 추가')
+    else:
+        if os.path.exists(output_path): os.remove(output_path)
+        start_line = 0
+    
+    end_line = df.shape[0]
+
+
+    # 서울시 전체 숙소 네이버 지도에서 검색 및 정보 크롤링      
+    for i in range(start_line, end_line, 1):
     #for i in [0,1]:
 
         print(f"----{i} 시작-----------------------------------")
-        print(df.사업장명[i], df.지번주소[i])
+        print(df.사업장명[i])
+        crw_item = np.full(9, np.nan).tolist()
+        csv_item = df.iloc[i].tolist()
 
         # 크롬 드라이버 설정 및 네이버 지도 켜기
         start_navermap_with_chrome()
         print('----지도켜기 완료')
 
         # 네이버 지도에서 숙소 검색창 띄우기
-        answer1 = search_hotel(df.사업장명[i], df.지번주소[i])
+        answer1 = search_hotel(df.사업장명[i], df.지번주소[i], df.도로명주소[i])
+
+
         if not(answer1): 
-            print('----숙소가 없습니다, 검색창 띄우기 건너띔')
-            continue
+            print('----숙소가 없습니다, 결측정보를 입력합니다')
         else:
             print('----검색창 띄우기 완료')
               
-        # 검색숙소 정보 가져오기
-        crw_item = get_attribute()
-        print('---- 검색숙소 정보 가져오기 완료')
+            # 검색숙소 정보 가져오기
+            crw_item = get_attribute()
+            print('---- 검색숙소 정보 가져오기 완료')
 
-        # close web
-        driver.close
+            # close web
+            driver.close
 
-        # result save
-        print("crw_item print: ")
-        print(crw_item)
+            # result save
+            print("crw_item print: ")
+            print(crw_item)     
+            
 
-        result1 = df.iloc[i].tolist()
-        result1.extend(crw_item)
-        result.append(result1)
+        csv_item.extend(crw_item)
+        result.append(csv_item)
+        print("print result: ", result)
 
-    print("print result: ", result)
+        get_list = pd.DataFrame(result, columns=colum_names)
+        get_df = get_list[colum_names2]
+        
+        if (file_set == 0) and (i == start_line):
+            get_df.to_csv(output_path, encoding='euc-kr')
+        else:
+            get_df.to_csv(output_path, encoding='euc-kr', mode='a', header=not os.path.exists(output_path))
 
-    colum_names = ['사업장명','지번주소','도로명주소','위도','경도',
-                '인허가일자','인허가취소일자','영업상태코드','폐업일자','휴업시작일자','휴업종료일자','재개업일자',
-                '업소유형','별점', '방문자 리뷰수', '블로그 리뷰수', '지하철역과의 거리', '도보시간', '구비시설',
-                '네이버 이런점이 좋아요 총합', '네이버 이런점이 좋아요 {항목:좋아요수}']  # 21
-    
-    get_list = pd.DataFrame(result, columns=colum_names)
-    print(get_list.info())
-
-    # 컬럼 순서 변경
-    colum_names2 = ['사업장명','업소유형','지번주소','도로명주소','위도','경도',
-                    '별점','방문자 리뷰수', '블로그 리뷰수', '지하철역과의 거리', '도보시간', '구비시설',
-                    '네이버 이런점이 좋아요 총합', '네이버 이런점이 좋아요 {항목:좋아요수}',
-                    '인허가일자','인허가취소일자','영업상태코드','폐업일자','휴업시작일자','휴업종료일자','재개업일자']  # 21
-    get_df = get_list[colum_names2]
-    get_df.to_csv("../DAOU/test_out_0_100.csv", encoding='euc-kr')
+        result = []
 
 if __name__ == '__main__':
     main()
