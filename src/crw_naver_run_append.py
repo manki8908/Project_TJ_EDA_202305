@@ -62,9 +62,20 @@ def start_navermap_with_chrome():
 
 
 
-def search_hotel(hotel_name, hotel_address):
+def search_hotel(hotel_name, hotel_address1, hotel_address2):
     # 검색 트리
-    search_keyword = f'{hotel_name}, {hotel_address}' 
+    if pd.notnull(hotel_address1):
+        address = hotel_address1
+        print(f"지번 주소를 가져왔습니다, {address}")
+    else:
+        if pd.notnull(hotel_address2):
+            address = hotel_address2
+            print(f"도로명 주소를 가져왔습니다, {address}")
+        else:
+            print("주소 정보가 없습니다")
+            return False
+
+    search_keyword = f'{hotel_name}, {address}' 
     driver.find_element(By.CLASS_NAME, 'input_search').send_keys(search_keyword)
     driver.find_element(By.CLASS_NAME, 'input_search').send_keys(Keys.ENTER)
     driver.implicitly_wait(5)
@@ -231,12 +242,13 @@ def get_attribute():
 def main():
 
     # 초기화, 
-    output_path = "../DAOU/test_out.csv"
+    output_path = "../DAOU/test_out_extd.csv"
     result = []
     
 
     # 서울시 전체 숙소(호텔,모델,게스트하우스, 등등) 리스트 로드
-    df = pd.read_csv('../DAIN/crw_list.txt', index_col=0)
+    #df = pd.read_csv('../DAIN/crw_list.txt', index_col=0)
+    df = pd.read_csv('../DAIN/crw_list_extd.txt', index_col=0)
     #df.info()
 
     # 새파일? or 기존파일에 추가 선택
@@ -257,14 +269,14 @@ def main():
     #for i in [0,1]:
 
         print(f"----{i} 시작-----------------------------------")
-        print(df.사업장명[i], df.지번주소[i])
+        print(df.사업장명[i])
 
         # 크롬 드라이버 설정 및 네이버 지도 켜기
         start_navermap_with_chrome()
         print('----지도켜기 완료')
 
         # 네이버 지도에서 숙소 검색창 띄우기
-        answer1 = search_hotel(df.사업장명[i], df.지번주소[i])
+        answer1 = search_hotel(df.사업장명[i], df.지번주소[i], df.도로명주소[i])
         if not(answer1): 
             print('----숙소가 없습니다, 검색창 띄우기 건너띔')
             continue
@@ -290,17 +302,18 @@ def main():
 
         colum_names = ['사업장명','지번주소','도로명주소','위도','경도',
                     '인허가일자','인허가취소일자','영업상태코드','폐업일자','휴업시작일자','휴업종료일자','재개업일자',
+                    '데이터갱신일자','업태구분명','한실수','양실수','욕실수',
                     '업소유형','별점', '방문자 리뷰수', '블로그 리뷰수', '지하철역과의 거리', '도보시간', '구비시설',
-                    '네이버 이런점이 좋아요 총합', '네이버 이런점이 좋아요 {항목:좋아요수}']  # 21
+                    '네이버 이런점이 좋아요 총합', '네이버 이런점이 좋아요 {항목:좋아요수}']  # 26
 
         get_list = pd.DataFrame(result, columns=colum_names)
         #print(get_list.info())
 
         # 컬럼 순서 변경
-        colum_names2 = ['사업장명','업소유형','지번주소','도로명주소','위도','경도',
-                        '별점','방문자 리뷰수', '블로그 리뷰수', '지하철역과의 거리', '도보시간', '구비시설',
-                        '네이버 이런점이 좋아요 총합', '네이버 이런점이 좋아요 {항목:좋아요수}',
-                        '인허가일자','인허가취소일자','영업상태코드','폐업일자','휴업시작일자','휴업종료일자','재개업일자']  # 21
+        colum_names2 = ['사업장명','업소유형','업태구분명','지번주소','도로명주소','위도','경도',
+                        '별점','방문자 리뷰수', '블로그 리뷰수', '지하철역과의 거리', '도보시간', '한실수','양실수','욕실수','구비시설',
+                        '네이버 이런점이 좋아요 총합', '네이버 이런점이 좋아요 {항목:좋아요수}', '데이터갱신일자'
+                        '인허가일자','인허가취소일자','영업상태코드','폐업일자','휴업시작일자','휴업종료일자','재개업일자']  # 26
         get_df = get_list[colum_names2]
         
         get_df.to_csv(output_path, encoding='euc-kr', mode='a', header=not os.path.exists(output_path))
