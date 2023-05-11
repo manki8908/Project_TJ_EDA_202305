@@ -230,20 +230,30 @@ def get_attribute():
 
 def main():
 
+    # 초기화, 
+    output_path = "../DAOU/test_out.csv"
+    result = []
+    
+
     # 서울시 전체 숙소(호텔,모델,게스트하우스, 등등) 리스트 로드
     df = pd.read_csv('../DAIN/crw_list.txt', index_col=0)
     #df.info()
 
-    # 서울시 전체 숙소 네이버 지도에서 검색 및 정보 크롤링
-    result = []
+    # 새파일? or 기존파일에 추가 선택
+    file_set = input("기존 파일에 추가하시겠습니까? 1(네) or 0(아니오): " )
 
-    # output 초기화
-    output_path = "../DAOU/test_out.csv"
-    if os.path.exists(output_path): os.remove(output_path)
+    if int(file_set) == 1: 
+        start_line = int(input("output file의 몇 번째 index부터 추가할 것입니까?: " )) - 2
+        print('기존 파일에 추가')
+    else:
+        if os.path.exists(output_path): os.remove(output_path)
+        start_line = 0
+    
+    end_line = df.shape[0]
 
 
-    for i in df.index:
-    #for i in range(0,100,1):
+    # 서울시 전체 숙소 네이버 지도에서 검색 및 정보 크롤링      
+    for i in range(start_line, end_line, 1):
     #for i in [0,1]:
 
         print(f"----{i} 시작-----------------------------------")
