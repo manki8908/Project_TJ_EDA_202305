@@ -76,8 +76,8 @@ def search_hotel(hotel_name, hotel_address1, hotel_address2):
             print("주소 정보가 없습니다")
             return False
 
-    search_keyword = f'{hotel_name}, {address}' 
-    print(f"검색키워드: {search_keyword}")
+    #search_keyword = f'{hotel_name}, {address}' 
+    search_keyword = f'{hotel_name}' 
     driver.find_element(By.CLASS_NAME, 'input_search').send_keys(search_keyword)
     driver.find_element(By.CLASS_NAME, 'input_search').send_keys(Keys.ENTER)
     driver.implicitly_wait(3)
