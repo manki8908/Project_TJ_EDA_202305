@@ -244,7 +244,7 @@ def get_attribute():
 def main():
 
     # 초기화, 
-    output_path = "../DAOU/test_out_extd.csv"
+    output_path = "../DAOU/test_large_out_v1.csv"
     result = []
 
     colum_names = ['사업장명','지번주소','도로명주소','위도','경도',
@@ -262,7 +262,7 @@ def main():
 
     # 서울시 전체 숙소(호텔,모델,게스트하우스, 등등) 리스트 로드
     #df = pd.read_csv('../DAIN/crw_list.txt', index_col=0)
-    df = pd.read_csv('../DAIN/crw_list_extd.txt', index_col=0)
+    df = pd.read_csv('../DAIN/crw_large_list.txt', index_col=0)
     #df.info()
 
     # 새파일? or 기존파일에 추가 선택

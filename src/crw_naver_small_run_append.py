@@ -244,7 +244,7 @@ def get_attribute():
 def main():
 
     # 초기화, 
-    output_path = "../DAOU/test_small_out.csv"
+    output_path = "../DAOU/test_small_out_v1.csv"
     result = []
 
     colum_names = ['사업장명','관광숙박업상세명','건물용도명','지번주소','도로명주소','위도','경도','객실수', 
